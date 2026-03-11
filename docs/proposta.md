@@ -1,43 +1,68 @@
-# Proposta do Projeto Integrador — Grupo B
 
-## Nome do Aplicativo
+## Estrutura Hierárquica da Aplicação
 
-**QuickShop** — Catalogo e pedidos online
-
-## Problema que Resolve
-
-Pequenos comerciantes locais nao possuem uma plataforma simples para expor
-seus produtos e receber pedidos pelo celular. Clientes precisam entrar em
-contato por WhatsApp ou telefone, sem rastreamento do status do pedido.
-O QuickShop resolve isso com um app Flutter que conecta lojistas e clientes
-de forma direta, com catalogo digital e acompanhamento de pedidos em tempo real.
-
-## Publico-Alvo
-
-- Lojistas de pequeno porte (mercadinhos, lojas de roupas, livrarias locais)
-- Clientes que preferem comprar pelo celular com entrega ou retirada na loja
-
-## Funcionalidades Principais
-
-1. Cadastro e autenticacao de usuarios (cliente e lojista)
-2. Catalogo de produtos com categorias, fotos e preco
-3. Carrinho de compras e criacao de pedidos
-4. Acompanhamento de status do pedido (pendente, confirmado, preparando, entregue)
-5. Historico de pedidos por usuario
-6. Painel do lojista para gerenciar produtos e pedidos
-
-## Recursos Tecnicos
-
-- Autenticacao via AWS Cognito
-- API REST hospedada na AWS (Lambda + API Gateway)
-- Armazenamento de imagens no S3
-- Banco de dados DynamoDB
-- Notificacoes de status via polling
+```
+MINHA MULHER QUE MANDA
+│
+├── ESPOSA (Boss)
+│   ├── Criar Tarefas
+│   │   ├── Titulo
+│   │   ├── Descricao
+│   │   ├── Prazo
+│   │   ├── Categoria
+│   │   └── Repeticao
+│   │
+│   └── Gerenciar Tarefas
+│       ├── Editar
+│       ├── Excluir
+│       ├── Prioridade
+│       └── Avaliar desempenho
+│
+├── MARIDO (Executor)
+│   ├── Ver Tarefas Pendentes
+│   │   ├── Lista TODO
+│   │   ├── Filtrar por status
+│   │   └── Por prazo de prova
+│   │
+│   └── Marcar como Feito
+│       ├── Status pendente
+│       ├── em andamento
+│       └── concluido
+│       └── Foto
+│
+├── APP (Sistema)
+│   ├── Notificacoes Push/Local
+│   │   ├── Nova tarefa
+│   │   ├── Prazo perto
+│   │   ├── Tarefas atrasadas
+│   │   └── Cobranca!
+│   │
+│   └── Autenticacao AWS Cognito
+│       ├── Login
+│       ├── Cadastro
+│       ├── Sessao
+│       └── Tipo usuario (esposa/marido)
+│
+├── Dashboard da Esposa
+│   ├── % Concluidas
+│   ├── Atrasadas
+│   ├── Historico
+│   └── Relatorio semanal
+│
+└── Gamificacao (Opcional)
+    ├── Pontos
+    ├── Ranking
+    ├── Recompensas
+    └── Sequencia de dias
+```
 
 ## Estrutura de Features
 
-| Feature        | Descricao                                          |
-|----------------|----------------------------------------------------|
-| autenticacao   | Login, cadastro e gerenciamento de sessao          |
-| catalogo       | Listagem, busca e detalhes de produtos             |
-| pedidos        | Criacao, acompanhamento e historico de pedidos     |
+| Feature | Descricao |
+|---------|-----------|
+| autenticacao | Login, cadastro e tipo de perfil (esposa/marido) |
+| tarefas | Criacao, edicao, exclusao e listagem de tarefas |
+| todo_list | Visualizacao e execucao das tarefas pelo marido |
+| notificacoes | Alertas de nova tarefa, prazo e cobracas |
+| dashboard | Painel de controle da esposa com estatisticas |
+| perfil | Gerenciamento de conta e vinculacao do casal |
