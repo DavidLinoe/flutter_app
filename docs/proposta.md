@@ -48,7 +48,7 @@ acompanhar o desempenho do marido.
    - Lista TODO
    - Filtrar por status
    - Ordenar por prazo
-
+   
 2. **Executar Tarefas** - Marcar tarefas como concluídas:
    - Status: Pendente → Em Andamento → Concluído
    - Enviar foto como prova de conclusão

@@ -1,0 +1,47 @@
+graph TD
+  A[Scaffold]
+
+  %% AppBar
+  A --> B[AppBar]
+  B --> B1[BackButton automático]
+  B --> B2[IconButton favorito toggle]
+
+  %% Body principal
+  A --> C[body Column]
+
+  %% Área rolável
+  C --> D[Expanded área rolável]
+  D --> E[SingleChildScrollView]
+  E --> F[Column conteúdo]
+  F --> G[Image.network full width cover]
+  F --> H[Padding horizontal]
+  H --> I[Column detalhes]
+
+  I --> J[Text nome destaque]
+  I --> K[SizedBox]
+  I --> L[Wrap categorias]
+  L --> L1[Chip categoria]
+  L --> L2[Chip categoria]
+
+  I --> M[SizedBox]
+  I --> N[Text preço destaque]
+  I --> O[SizedBox]
+
+  I --> P[Row avaliação]
+  P --> P1[Icon star]
+  P --> P2[Icon star]
+  P --> P3[Icon star]
+  P --> P4[Icon star]
+  P --> P5[Icon star_border]
+  P --> P6[SizedBox]
+  P --> P7[Text nota total]
+
+  I --> Q[Divider]
+  I --> R[Text descrição]
+  I --> S[Divider]
+  I --> T[Text ingredientes]
+
+  %% Botão fixo fora da rolagem
+  C --> U[Padding botão fixo]
+  U --> V[SizedBox largura infinita]
+  V --> W[ElevatedButton adicionar ao pedido]   

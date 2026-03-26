@@ -1,0 +1,366 @@
+import 'package:flutter/material.dart';
+
+class ItemCarrinho {
+  final String id;
+  final String nome;
+  final String observacao;
+  final String imagemUrl;
+  final double preco;
+  final int quantidade;
+
+  const ItemCarrinho({
+    required this.id,   
+    required this.nome,
+    required this.observacao,
+    required this.imagemUrl,
+    required this.preco,
+    required this.quantidade,
+  });
+
+  double get subtotal => preco * quantidade;
+
+  ItemCarrinho copyWith({int? quantidade}) {
+    return ItemCarrinho(
+      id: id,
+      nome: nome,
+      observacao: observacao,
+      imagemUrl: imagemUrl,
+      preco: preco,
+      quantidade: quantidade ?? this.quantidade,
+    );
+  }
+}
+
+class Endereco {
+  final String logradouro;
+  final String complemento;
+
+  const Endereco({required this.logradouro, required this.complemento});
+}
+
+enum MetodoPagamento { cartaoCredito, cartaoDebito, pix }
+
+class SecaoPedido extends StatelessWidget {
+  final String titulo;
+  final Widget child;
+
+  const SecaoPedido({super.key, required this.titulo, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(titulo, style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          child,
+        ],
+      ),
+    );
+  }
+}
+
+class CartItemTile extends StatelessWidget {
+  final ItemCarrinho item;
+  final void Function(int novaQuantidade) onAlterarQuantidade;
+
+  const CartItemTile({
+    super.key,
+    required this.item,
+    required this.onAlterarQuantidade,
+  });
+
+  String get _subtotal => 'R\$ ${item.subtotal.toStringAsFixed(2)}';
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                item.imagemUrl,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.nome,
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    item.observacao,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () {
+                          final q = item.quantidade - 1;
+                          if (q >= 1) onAlterarQuantidade(q);
+                        },
+                      ),
+                      Text('${item.quantidade}'),
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        onPressed: () => onAlterarQuantidade(item.quantidade + 1),
+                      ),
+                      const Spacer(),
+                      Text(
+                        _subtotal,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TelaFinalizarPedido extends StatefulWidget {
+  const TelaFinalizarPedido({super.key});
+
+  @override
+  State<TelaFinalizarPedido> createState() => _TelaFinalizarPedidoState();
+}
+
+class _TelaFinalizarPedidoState extends State<TelaFinalizarPedido> {
+  late List<ItemCarrinho> _itens;
+  MetodoPagamento _metodoPagamento = MetodoPagamento.pix;
+
+  final Endereco _endereco = const Endereco(
+    logradouro: 'Rua das Flores, 123',
+    complemento: 'Apto 45',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _itens = [
+      const ItemCarrinho(
+        id: 'i1',
+        nome: 'Pizza Margherita',
+        observacao: 'Sem cebola',
+        imagemUrl: 'imagemtop1',
+        preco: 39.90,
+        quantidade: 1,
+      ),
+      const ItemCarrinho(
+        id: 'i2',
+        nome: 'Hambúrguer Duplo',
+        observacao: 'Ponto da carne: ao ponto',
+        imagemUrl: 'imagemtop2',
+        preco: 34.90,
+        quantidade: 2,
+      ),
+      const ItemCarrinho(
+        id: 'i3',
+        nome: 'Refrigerante Lata',
+        observacao: 'Gelado',
+        imagemUrl: 'imagemtop3',
+        preco: 6.50,
+        quantidade: 3,
+      ),
+    ];
+  }
+
+  double get _subtotal => _itens.fold(0, (acc, i) => acc + i.subtotal);
+  double get _taxaEntrega => 7.90;
+  double get _total => _subtotal + _taxaEntrega;
+
+  void _confirmarPedido() {
+    debugPrint('--- CONFIRMAR PEDIDO ---');
+    for (final i in _itens) {
+      debugPrint('${i.nome} x${i.quantidade} = R\$ ${i.subtotal.toStringAsFixed(2)}');
+    }
+    debugPrint('Pagamento: $_metodoPagamento');
+    debugPrint('Total: R\$ ${_total.toStringAsFixed(2)}');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Finalizar Pedido')),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              children: [
+                SecaoPedido(
+                  titulo: 'Itens do pedido',
+                  child: Column(
+                    children: _itens.map((item) {
+                      return Dismissible(
+                        key: ValueKey(item.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          color: theme.colorScheme.error,
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: theme.colorScheme.onError,
+                          ),
+                        ),
+                        onDismissed: (_) {
+                          setState(() {
+                            _itens.removeWhere((x) => x.id == item.id);
+                          });
+                        },
+                        child: CartItemTile(
+                          item: item,
+                          onAlterarQuantidade: (q) {
+                            setState(() {
+                              final idx = _itens.indexWhere((x) => x.id == item.id);
+                              _itens[idx] = _itens[idx].copyWith(quantidade: q);
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                SecaoPedido(
+                  titulo: 'Endereco de entrega',
+                  child: Card(
+                    margin: const EdgeInsets.all(12),
+                    child: ListTile(
+                      leading: const Icon(Icons.location_on_outlined),
+                      title: Text(_endereco.logradouro),
+                      subtitle: Text(_endereco.complemento),
+                      trailing: TextButton(
+                        onPressed: () {},
+                        child: const Text('Alterar'),
+                      ),
+                    ),
+                  ),
+                ),
+                SecaoPedido(
+                  titulo: 'Forma de pagamento',
+                  child: Column(
+                    children: [
+                      RadioListTile<MetodoPagamento>(
+                        value: MetodoPagamento.cartaoCredito,
+                        groupValue: _metodoPagamento,
+                        onChanged: (v) => setState(() => _metodoPagamento = v!),
+                        title: const Text('Cartao de credito'),
+                      ),
+                      RadioListTile<MetodoPagamento>(
+                        value: MetodoPagamento.cartaoDebito,
+                        groupValue: _metodoPagamento,
+                        onChanged: (v) => setState(() => _metodoPagamento = v!),
+                        title: const Text('Cartao de debito'),
+                      ),
+                      RadioListTile<MetodoPagamento>(
+                        value: MetodoPagamento.pix,
+                        groupValue: _metodoPagamento,
+                        onChanged: (v) => setState(() => _metodoPagamento = v!),
+                        title: const Text('Pix'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.shadowColor.withOpacity(0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Subtotal'),
+                    Text('R\$ ${_subtotal.toStringAsFixed(2)}'),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Taxa de entrega'),
+                    Text('R\$ ${_taxaEntrega.toStringAsFixed(2)}'),
+                  ],
+                ),
+                const Divider(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Total', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'R\$ ${_total.toStringAsFixed(2)}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _confirmarPedido,
+                    child: Text('Confirmar pedido — R\$ ${_total.toStringAsFixed(2)}'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.deepOrange),
+      home: const TelaFinalizarPedido(),
+    ),
+  );
+}
