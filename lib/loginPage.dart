@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/ex7/homePage.dart' show HomePage;
+import 'package:flutter_app/homePage.dart' show HomePage;
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -47,10 +48,11 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomePage()),
-                  );
+                  context.go( '/home' );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(builder: (context) => const HomePage()),
+                  // );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.pinkAccent,
