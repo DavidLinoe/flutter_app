@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/detalhesPage.dart' show DetalhesPage;
+import 'package:flutter_app/services/auth_service.dart';
+import 'package:go_router/go_router.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  static final List<Map<String, String>> _tarefas = [
+    {"id": "1", "titulo": "Lavar a louça", "status": "Pendente", "prioridade": "Alta"},
+    {"id": "2", "titulo": "Comprar pão", "status": "Pendente", "prioridade": "Média"},
+    {"id": "3", "titulo": "Levar o lixo fora", "status": "Feito", "prioridade": "Baixa"},
+    {"id": "4", "titulo": "Arrumar a cama", "status": "Pendente", "prioridade": "Urgente"},
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, String>> tarefas = [
-      {"titulo": "Lavar a louça", "status": "Pendente", "prioridade": "Alta"},
-      {"titulo": "Comprar pão", "status": "Pendente", "prioridade": "Média"},
-      {"titulo": "Levar o lixo fora", "status": "Feito", "prioridade": "Baixa"},
-      {"titulo": "Arrumar a cama", "status": "Pendente", "prioridade": "Urgente"},
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Minhas missões'),
@@ -22,8 +23,12 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => Navigator.pop(context),
-          )
+            tooltip: 'Sair',
+            onPressed: () {
+              AuthService.instance.logout();
+              context.go('/login');
+            },
+          ),
         ],
       ),
       body: Column(
@@ -45,37 +50,29 @@ class HomePage extends StatelessWidget {
           ),
           Expanded(
             child: ListView.builder(
-              itemCount: tarefas.length,
+              itemCount: _tarefas.length,
               itemBuilder: (context, index) {
-                final tarefa = tarefas[index];
+                final tarefa = _tarefas[index];
+                final feito = tarefa['status'] == 'Feito';
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                   child: ListTile(
                     leading: Icon(
-                      tarefa['status'] == 'Feito'
-                          ? Icons.check_circle
-                          : Icons.pending_actions,
-                      color: tarefa['status'] == 'Feito' ? Colors.green : Colors.orange,
+                      feito ? Icons.check_circle : Icons.pending_actions,
+                      color: feito ? Colors.green : Colors.orange,
                     ),
                     title: Text(
                       tarefa['titulo']!,
                       style: TextStyle(
-                        decoration: tarefa['status'] == 'Feito'
-                            ? TextDecoration.lineThrough
-                            : null,
+                        decoration: feito ? TextDecoration.lineThrough : null,
                       ),
                     ),
                     subtitle: Text('Prioridade: ${tarefa['prioridade']}'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DetalhesPage(
-                            titulo: tarefa['titulo']!,
-                            prioridade: tarefa['prioridade']!,
-                          ),
-                        ),
+                      context.go(
+                        '/home/detalhes/${tarefa['id']}',
+                        extra: tarefa,
                       );
                     },
                   ),

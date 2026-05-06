@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class DetalhesPage extends StatelessWidget {
   final String titulo;
@@ -55,12 +56,12 @@ class DetalhesPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 15),
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.timer, color: Colors.grey),
-                const SizedBox(width: 10),
-                const Text('Prazo: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                const Text('Até a janta'),
+                Icon(Icons.timer, color: Colors.grey),
+                SizedBox(width: 10),
+                Text('Prazo: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Até a janta'),
               ],
             ),
             const Spacer(),
@@ -68,9 +69,7 @@ class DetalhesPage extends StatelessWidget {
               width: double.infinity,
               height: 60,
               child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => context.go('/home'),
                 icon: const Icon(Icons.done_all),
                 label: const Text('MISSÃO CUMPRIDA'),
                 style: ElevatedButton.styleFrom(

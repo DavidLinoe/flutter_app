@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/detalhesPage.dart' show DetalhesPage;
-import 'package:flutter_app/homePage.dart' show HomePage;
-import 'package:flutter_app/loginPage.dart';
-import 'package:go_router/go_router.dart';
-final _roteador = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => LoginPage(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => HomePage(),
-    ),
-  ],
-);
+import 'package:flutter_app/router/app_router.dart';
 
 void main() {
-  runApp(
-    MaterialApp.router(
-      routerConfig: _roteador,
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: 'Minha mulher que manda',
       debugShowCheckedModeBanner: false,
-    ),
-  );
+      routerConfig: appRouter,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
+        useMaterial3: true,
+      ),
+    );
+  }
 }
