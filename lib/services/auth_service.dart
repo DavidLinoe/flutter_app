@@ -1,9 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 class AuthService extends ChangeNotifier {
-  AuthService._();
-  static final AuthService instance = AuthService._();
-
   static const _mockEmail = 'marido@casa.com';
   static const _mockSenha = '123456';
 
