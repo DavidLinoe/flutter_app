@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/services/auth_service.dart';
-import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -28,16 +28,14 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _carregando = true);
-    final ok = await AuthService.instance.login(
-      _emailCtrl.text,
-      _senhaCtrl.text,
-    );
+    final ok = await context.read<AuthService>().login(
+          _emailCtrl.text,
+          _senhaCtrl.text,
+        );
     if (!mounted) return;
     setState(() => _carregando = false);
 
-    if (ok) {
-      context.go('/home');
-    } else {
+    if (!ok) {
       setState(() => _erro = 'E-mail ou senha incorretos');
     }
   }
