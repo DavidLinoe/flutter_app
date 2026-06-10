@@ -1,69 +1,67 @@
 import 'package:flutter/foundation.dart';
-import '../models/tarefa.dart';
 import '../models/enums.dart';
+import '../models/tarefa.dart';
+import '../services/tarefa_service.dart';
 
 class TarefaNotifier extends ChangeNotifier {
-  final List<Tarefa> _tarefas = [
-    Tarefa(
-      id: '1',
-      titulo: 'Lavar a louça',
-      descricao: 'Lavar toda a louça acumulada na pia',
-      criadaPorId: 'esposa',
-      atribuidoAId: 'marido',
-      status: StatusTarefa.todo,
-      prioridade: PrioridadeTarefa.alta,
-      categoria: CategoriaTarefa.cozinha,
-      prazo: DateTime.now().add(const Duration(hours: 3)),
-      criadoEm: DateTime.now(),
-    ),
-    Tarefa(
-      id: '2',
-      titulo: 'Comprar pão',
-      descricao: 'Comprar pão na padaria do bairro',
-      criadaPorId: 'esposa',
-      atribuidoAId: 'marido',
-      status: StatusTarefa.todo,
-      prioridade: PrioridadeTarefa.media,
-      categoria: CategoriaTarefa.compras,
-      prazo: DateTime.now().add(const Duration(hours: 1)),
-      criadoEm: DateTime.now(),
-    ),
-    Tarefa(
-      id: '3',
-      titulo: 'Levar o lixo fora',
-      descricao: 'Levar o lixo para a rua antes da coleta',
-      criadaPorId: 'esposa',
-      atribuidoAId: 'marido',
-      status: StatusTarefa.concluido,
-      prioridade: PrioridadeTarefa.baixa,
-      categoria: CategoriaTarefa.outro,
-      prazo: DateTime.now().add(const Duration(hours: 5)),
-      criadoEm: DateTime.now(),
-      concluidoEm: DateTime.now(),
-    ),
-    Tarefa(
-      id: '4',
-      titulo: 'Arrumar a cama',
-      descricao: 'Arrumar a cama do casal com cuidado',
-      criadaPorId: 'esposa',
-      atribuidoAId: 'marido',
-      status: StatusTarefa.todo,
-      prioridade: PrioridadeTarefa.alta,
-      categoria: CategoriaTarefa.quarto,
-      prazo: DateTime.now().add(const Duration(hours: 2)),
-      criadoEm: DateTime.now(),
-    ),
-  ];
+  TarefaNotifier(this._service) {
+    carregarTarefas();
+  }
+
+  final TarefaService _service;
+  List<Tarefa> _tarefas = [];
+  bool _carregando = false;
 
   List<Tarefa> get tarefas => List.unmodifiable(_tarefas);
+  bool get carregando => _carregando;
 
-  void concluirTarefa(String id) {
-    final index = _tarefas.indexWhere((t) => t.id == id);
-    if (index == -1) return;
-    _tarefas[index] = _tarefas[index].copyWith(
-      status: StatusTarefa.concluido,
-      concluidoEm: DateTime.now(),
+  Future<void> carregarTarefas() async {
+    _carregando = true;
+    notifyListeners();
+    _tarefas = List.from(await _service.listarTarefas());
+    _carregando = false;
+    notifyListeners();
+  }
+
+  Future<void> adicionarTarefa({
+    required String titulo,
+    required String descricao,
+    required PrioridadeTarefa prioridade,
+    required CategoriaTarefa categoria,
+    required DateTime prazo,
+  }) async {
+    final nova = await _service.criarTarefa(
+      titulo: titulo,
+      descricao: descricao,
+      prioridade: prioridade,
+      categoria: categoria,
+      prazo: prazo,
     );
+    _tarefas = [..._tarefas, nova];
+    notifyListeners();
+  }
+
+  Future<void> atualizarTarefa(Tarefa tarefa) async {
+    final atualizada = await _service.atualizarTarefa(tarefa);
+    _tarefas = [
+      for (final t in _tarefas)
+        if (t.id == atualizada.id) atualizada else t,
+    ];
+    notifyListeners();
+  }
+
+  Future<void> deletarTarefa(String id) async {
+    await _service.deletarTarefa(id);
+    _tarefas = _tarefas.where((t) => t.id != id).toList();
+    notifyListeners();
+  }
+
+  Future<void> concluirTarefa(String id) async {
+    final atualizada = await _service.concluirTarefa(id);
+    _tarefas = [
+      for (final t in _tarefas)
+        if (t.id == atualizada.id) atualizada else t,
+    ];
     notifyListeners();
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_app/providers/setup_locator.dart';
 import 'package:flutter_app/providers/tarefa_notifier.dart';
 import 'package:flutter_app/router/app_router.dart';
 import 'package:flutter_app/services/auth_service.dart';
+import 'package:flutter_app/services/tarefa_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,9 +19,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        // ChangeNotifierProvider com create: — padrão do material
         ChangeNotifierProvider(create: (_) => sl<AuthService>()),
-        ChangeNotifierProvider(create: (_) => TarefaNotifier()),
+        ChangeNotifierProvider(create: (_) => TarefaNotifier(sl<TarefaService>())),
       ],
       child: MaterialApp.router(
         title: 'Minha mulher que manda',

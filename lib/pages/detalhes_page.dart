@@ -9,6 +9,36 @@ class DetalhesPage extends StatelessWidget {
 
   const DetalhesPage({super.key, required this.id});
 
+  String _formatarData(DateTime dt) =>
+      '${dt.day.toString().padLeft(2, '0')}/'
+      '${dt.month.toString().padLeft(2, '0')}/'
+      '${dt.year}';
+
+  Future<void> _confirmarDelecao(BuildContext context) async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Apagar missão?'),
+        content: const Text('Essa ação não pode ser desfeita.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Apagar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmar == true && context.mounted) {
+      await context.read<TarefaNotifier>().deletarTarefa(id);
+      if (context.mounted) context.go('/home');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final tarefa = context.select<TarefaNotifier, Tarefa?>(
@@ -33,6 +63,19 @@ class DetalhesPage extends StatelessWidget {
         title: const Text('Detalhes da Missão'),
         backgroundColor: Colors.pinkAccent,
         foregroundColor: Colors.white,
+        actions: [
+          if (!feito)
+            IconButton(
+              icon: const Icon(Icons.edit),
+              tooltip: 'Editar',
+              onPressed: () => context.go('/home/detalhes/$id/editar'),
+            ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: 'Apagar',
+            onPressed: () => _confirmarDelecao(context),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -57,9 +100,11 @@ class DetalhesPage extends StatelessWidget {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Faça bem feito, não deixe para depois e use os produtos certos. Se tiver dúvida, não me pergunte, resolva!',
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+            Text(
+              tarefa.descricao.isNotEmpty
+                  ? tarefa.descricao
+                  : 'Faça bem feito e sem reclamar!',
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
             ),
             const SizedBox(height: 30),
             Row(
@@ -71,12 +116,37 @@ class DetalhesPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 15),
-            const Row(
+            Row(
               children: [
-                Icon(Icons.timer, color: Colors.grey),
-                SizedBox(width: 10),
-                Text('Prazo: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('Até a janta'),
+                const Icon(Icons.category, color: Colors.grey),
+                const SizedBox(width: 10),
+                const Text('Categoria: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(tarefa.categoria.value),
+              ],
+            ),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                Icon(
+                  Icons.timer,
+                  color: tarefa.estaVencida ? Colors.red : Colors.grey,
+                ),
+                const SizedBox(width: 10),
+                const Text('Prazo: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  _formatarData(tarefa.prazo),
+                  style: TextStyle(
+                    color: tarefa.estaVencida ? Colors.red : null,
+                    fontWeight: tarefa.estaVencida ? FontWeight.bold : null,
+                  ),
+                ),
+                if (tarefa.estaVencida) ...[
+                  const SizedBox(width: 8),
+                  const Text(
+                    '(VENCIDA)',
+                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  ),
+                ],
               ],
             ),
             const Spacer(),
@@ -86,9 +156,9 @@ class DetalhesPage extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: feito
                     ? null
-                    : () {
-                        context.read<TarefaNotifier>().concluirTarefa(id);
-                        context.go('/home');
+                    : () async {
+                        await context.read<TarefaNotifier>().concluirTarefa(id);
+                        if (context.mounted) context.go('/home');
                       },
                 icon: const Icon(Icons.done_all),
                 label: Text(feito ? 'JÁ CUMPRIDA' : 'MISSÃO CUMPRIDA'),

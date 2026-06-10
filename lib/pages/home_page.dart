@@ -7,9 +7,22 @@ import 'package:provider/provider.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  String _statusText(double progresso) {
+    if (progresso >= 1.0) return 'Status do Marido: HERÓI DA SEMANA!';
+    if (progresso >= 0.7) return 'Status do Marido: QUASE LÁ!';
+    if (progresso >= 0.4) return 'Status do Marido: AINDA DÁ TEMPO';
+    return 'Status do Marido: SOB PRESSÃO';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final tarefas = context.watch<TarefaNotifier>().tarefas;
+    final notifier = context.watch<TarefaNotifier>();
+    final tarefas = notifier.tarefas;
+    final carregando = notifier.carregando;
+
+    final total = tarefas.length;
+    final concluidas = tarefas.where((t) => t.isConcluida).length;
+    final progresso = total > 0 ? concluidas / total : 0.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,48 +47,71 @@ class HomePage extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             color: Colors.pink[50],
-            child: const Column(
+            child: Column(
               children: [
                 Text(
-                  'Status do Marido: SOB PRESSÃO',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
+                  _statusText(progresso),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.pink),
                 ),
-                SizedBox(height: 5),
-                LinearProgressIndicator(value: 0.3, color: Colors.pink),
+                const SizedBox(height: 5),
+                LinearProgressIndicator(value: progresso, color: Colors.pink),
+                const SizedBox(height: 4),
+                Text(
+                  '$concluidas de $total missões concluídas',
+                  style: const TextStyle(fontSize: 12, color: Colors.pink),
+                ),
               ],
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: tarefas.length,
-              itemBuilder: (context, index) {
-                final tarefa = tarefas[index];
-                final feito = tarefa.isConcluida;
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                  child: ListTile(
-                    leading: Icon(
-                      feito ? Icons.check_circle : Icons.pending_actions,
-                      color: feito ? Colors.green : Colors.orange,
-                    ),
-                    title: Text(
-                      tarefa.titulo,
-                      style: TextStyle(
-                        decoration: feito ? TextDecoration.lineThrough : null,
+            child: carregando
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.pinkAccent),
+                  )
+                : tarefas.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'Nenhuma missão por enquanto!\nA patroa vai inventar algo em breve...',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: tarefas.length,
+                        itemBuilder: (context, index) {
+                          final tarefa = tarefas[index];
+                          final feito = tarefa.isConcluida;
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 8),
+                            child: ListTile(
+                              leading: Icon(
+                                feito ? Icons.check_circle : Icons.pending_actions,
+                                color: feito ? Colors.green : Colors.orange,
+                              ),
+                              title: Text(
+                                tarefa.titulo,
+                                style: TextStyle(
+                                  decoration:
+                                      feito ? TextDecoration.lineThrough : null,
+                                ),
+                              ),
+                              subtitle: Text(
+                                'Prioridade: ${tarefa.prioridade.value}  •  ${tarefa.categoria.value}',
+                              ),
+                              trailing: const Icon(Icons.arrow_forward_ios,
+                                  size: 16),
+                              onTap: () =>
+                                  context.go('/home/detalhes/${tarefa.id}'),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    subtitle: Text('Prioridade: ${tarefa.prioridade.value}'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () => context.go('/home/detalhes/${tarefa.id}'),
-                  ),
-                );
-              },
-            ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () => context.go('/home/nova-tarefa'),
         label: const Text('Nova ordem'),
         icon: const Icon(Icons.add_alert),
         backgroundColor: Colors.pinkAccent,

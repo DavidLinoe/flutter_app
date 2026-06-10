@@ -1,14 +1,11 @@
 import 'package:flutter_app/pages/detalhes_page.dart';
 import 'package:flutter_app/pages/home_page.dart';
 import 'package:flutter_app/pages/login_page.dart';
+import 'package:flutter_app/pages/tarefa_form_page.dart';
 import 'package:flutter_app/providers/setup_locator.dart';
 import 'package:flutter_app/services/auth_service.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
-final getIt = GetIt.instance;
-
-// sl<AuthService>() acessa o GetIt porque o router não tem BuildContext
 final GoRouter appRouter = GoRouter(
   initialLocation: '/login',
   refreshListenable: sl<AuthService>(),
@@ -30,10 +27,22 @@ final GoRouter appRouter = GoRouter(
       builder: (context, state) => const HomePage(),
       routes: [
         GoRoute(
+          path: 'nova-tarefa',
+          builder: (context, state) => const TarefaFormPage(),
+        ),
+        GoRoute(
           path: 'detalhes/:id',
           builder: (context, state) => DetalhesPage(
             id: state.pathParameters['id']!,
           ),
+          routes: [
+            GoRoute(
+              path: 'editar',
+              builder: (context, state) => TarefaFormPage(
+                id: state.pathParameters['id']!,
+              ),
+            ),
+          ],
         ),
       ],
     ),
